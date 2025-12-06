@@ -25,7 +25,6 @@ services:
   backend:
     build:
       context: ./backend
-      # אם יש Dockerfile עם שם שונה: dockerfile: Dockerfile
     environment:
       DATABASE_URL: "postgres://postgres:postgres@db:5432/translations"
     ports:
