@@ -3,11 +3,10 @@ kind: Service
 metadata:
   name: backend-service
 spec:
-  type: NodePort
+  type: ClusterIP # משנים מ-NodePort ל-ClusterIP
   selector:
     app: backend
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 3001
-      nodePort: 30001
+      targetPort: 3001 # מוודא שה-Frontend וה-Ingress פונים לפורט 80 והוא מעביר ל-3001

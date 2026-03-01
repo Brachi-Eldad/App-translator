@@ -10,12 +10,12 @@ spec:
   template:
     metadata:
       labels:
-        app: frontend
+        app:  frontend
     spec:
       containers:
       - name: frontend
-        image: frontend-image:v4
-        imagePullPolicy: IfNotPresent
+        image: brachieldod/app-translator-frontend:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 80
 ---
@@ -24,10 +24,9 @@ kind: Service
 metadata:
   name: frontend-service
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: frontend
   ports:
   - port: 80
-    targetPort: 80
-    nodePort: 30080
+    targetPort: 80    
