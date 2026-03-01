@@ -15,14 +15,8 @@ spec:
       containers:
       - name: translator
         image: libretranslate/libretranslate:latest
-        imagePullPolicy: Never
         ports:
         - containerPort: 5000
-        env:
-        - name: REQUESTS_CA_BUNDLE
-          value: ""
-        - name: LT-UPDATE_MOODELS
-          value: "false"  
 ---
 apiVersion: v1
 kind: Service
@@ -33,4 +27,4 @@ spec:
     app: translator
   ports:
   - port: 5000
-    targetPort: 5000    
+    targetPort: 5000
