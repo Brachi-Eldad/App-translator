@@ -4,55 +4,49 @@ import fetch from 'node-fetch';
 import pkg from 'pg';
 const { Pool } = pkg;
 
+
 const app = express();
 app.use(express.json());
 app.use(cors());
 
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@db:5432/translations'
+connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@db:5432/translations'
 });
+const translatorHost = process.env.TRANSLATOR_HOST || 'translator';
 
 // פונקציית תרגום אמיתית דרך LibreTranslate API
 async function translateText(text, target) {
-  try {
-    const res = await fetch('http://translator:5000/translate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: text, source: 'auto', target, format: 'text' })
-    });
-    const data = await res.json();
-    return data.translatedText;
-  } catch (err) {
-    console.error('Translation error:', err);
-    return '(שגיאה בתרגום)';
-  }
+try {
+const res = await fetch(`http://${process.env.TRANSLATOR_HOST || 'translator'}:5000/translate`, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ q: text, source: 'auto', target, format: 'text' })
+});
+const data = await res.json();
+return data.translatedText;
+} catch (err) {
+console.error('Translation error:', err);
+return '(שגיאה בתרגום)';
+}
 }
 
-app.post('/translate', async (req, res) => {
-  const { text, target } = req.body;
-  if (!text || !target) return res.status(400).json({ error: 'Missing text or target' });
 
-  const translatedText = await translateText(text, target);
-  try {
-    await pool.query('INSERT INTO translations (source_text, target_lang, translated_text) VALUES ($1,$2,$3)', [text, target, translatedText]);
-  } catch (dbErr) {
-    console.error('Database error:', dbErr);
-  }
-  res.json({ translatedText });
+app.post('/translate', async (req, res) => {
+const { text, target } = req.body;
+if (!text || !target) return res.status(400).json({ error: 'Missing text or target' });
+
+
+const translatedText = await translateText(text, target);
+await pool.query('INSERT INTO translations (source_text, target_lang, translated_text) VALUES ($1,$2,$3)', [text, target, translatedText]);
+res.json({ translatedText });
 });
+
 
 app.get('/history', async (req, res) => {
-  try {
-    const r = await pool.query('SELECT source_text, translated_text FROM translations ORDER BY id DESC LIMIT 10');
-    res.json(r.rows);
-  } catch (dbErr) {
-    console.error('Database history error:', dbErr);
-    res.status(500).json({ error: 'Database error' });
-  }
+const r = await pool.query('SELECT source_text, translated_text FROM translations ORDER BY id DESC LIMIT 10');
+res.json(r.rows);
 });
 
-// השינוי הקריטי כאן: הוספת '0.0.0.0'
-const PORT = 3001;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Backend running on http://0.0.0.0:${PORT}`);
-});
+
+app.listen(3001, () => console.log('✅ Backend running on http://localhost:3001'));
